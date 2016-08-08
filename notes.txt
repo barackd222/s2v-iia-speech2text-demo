@@ -1,0 +1,4 @@
+http://stackoverflow.com/questions/29330977/webkitspeechrecognition-no-longer-prompts-for-permission
+
+https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognitionError/error
+
