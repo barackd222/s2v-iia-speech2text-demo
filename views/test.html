@@ -1,10 +1,25 @@
 <!-- CSS Styles -->
 <style>
-  .speech {border: 1px solid #DDD; width: 300px; padding: 0; margin: 0}
-  .speech input {border: 0; width: 240px; display: inline-block; height: 30px;}
-  .speech img {float: right; width: 40px }
+  .speech {
+    border: 1px solid #DDD;
+    width: 300px;
+    padding: 0;
+    margin: 0
+  }
+  
+  .speech input {
+    border: 0;
+    width: 240px;
+    display: inline-block;
+    height: 30px;
+  }
+  
+  .speech img {
+    float: right;
+    width: 40px
+  }
 </style>
- 
+
 <!-- Search Form -->
 <form id="labnol" method="get" action="https://www.google.com/search">
   <div class="speech">
@@ -12,9 +27,13 @@
     <img onclick="startDictation()" src="images/cHidSVu.gif" />
   </div>
 </form>
- 
+
+<!-- Loading S2V IIA Workshop Extensions -->
+<script src='https://code.responsivevoice.org/responsivevoice.js'></script>
+
 <!-- HTML5 Speech Recognition API -->
 <script>
+
   function startDictation() {
  
     console.log("Starting dictation...");
@@ -42,6 +61,32 @@
         document.getElementById('transcript').value = txt;
         recognition.stop();
         //document.getElementById('labnol').submit();
+
+
+			// Call S2V-IIA-Extension Modules:
+			// Integrating to TTS:
+		  var action = [];
+			
+			processMessage(txt, action);
+
+			//alert("Msg is [" + msg + "]");
+
+			console.log("action.length is [" + action.length + "], action[0] is [" + action[0] + "], action[1] is [" + action[1] + "]");
+
+			if (action.length > 0) {
+
+				responsiveVoice.speak(action[0], "UK English Male");
+
+				setTimeout(function () {
+					console.log("API called [" + action[1] + "]");
+					sendRequest(initiateXMLHttpObject(), "POST", action[1], true);          
+
+				}, 4000);//Wait 7 seconds before showing up the alert message, to allow the UK English male to talk! 
+
+			}
+
+
+        
       };
  
       recognition.onerror = function(event) {
@@ -53,4 +98,135 @@
  
     }
   }
+
+
+	function processMessage(message, action) {
+
+		console.log("Processing a amessage [" + message + "]");
+
+//		var globalIPAddress = "10.0.0.97";
+		var globalIPAddress = "accs.oraclecloud.com";
+
+		var globalPort = "3001";
+
+
+		var PLEASE = "PLEASE",
+			shape = "",
+			colour = "",
+			SQUARE = "Square",
+			TRIANGLE = "Triangle",
+			LINE = "Line",
+			RED = "Red",
+			YELLOW = "Yellow",
+			BLUE = "Blue",
+			GREEN = "Green",
+			PINK = "Pink";
+
+
+
+		// Assess if Sphero is being used as a command at the beginning.
+		if (message.search(/PLEASE/i) != -1 && message.search(/PLEASE/i) == 0) {
+
+			console.log("Found: " + PLEASE);
+
+			//alert("Sphero was found as a comand");
+
+			if (message.search(/SQUARE/i) != -1) {
+
+				console.log("Found: " + SQUARE);
+				shape = "square";
+
+			} else if (message.search(/TRIANGLE/i) != -1) {
+
+				console.log("Found: " + TRIANGLE);
+				shape = "triangle";
+
+			} else if (message.search(/LINE/i) != -1) {
+
+				console.log("Found: " + LINE);
+				shape = "line";
+
+			}
+
+			if (message.search(/RED/i) != -1) {
+
+				console.log("Found: " + RED);
+				colour = "red";
+
+			} else if (message.search(/YELLOW/i) != -1) {
+
+				console.log("Found: " + YELLOW);
+				colour = "yellow";
+
+			} else if (message.search(/BLUE/i) != -1) {
+
+				console.log("Found: " + BLUE);
+				colour = "blue";
+
+			} else if (message.search(/GREEN/i) != -1) {
+
+				console.log("Found: " + GREEN);
+				colour = "green";
+
+			} else if (message.search(/PINK/i) != -1) {
+
+				console.log("Found: " + PINK);
+				colour = "pink";
+			}
+
+			if (shape != "" && colour != "") {
+
+				console.log("Found: " + shape + " and " + colour);
+
+				action[0] = "No worries, I'll make a " + shape + " and turn " + colour;
+				action[1] = "http://" + globalIPAddress + ":" + globalPort + "/sphero/shape/" + shape + "/color/" + colour;// Sphero make shape and set colour API!
+
+			} else if (shape == "" && colour != "") {
+
+				console.log("Found: " + colour);
+
+				action[0] = "No worries, I'll turn " + colour;
+				action[1] = "http://" + globalIPAddress + ":" + globalPort + "/sphero/color/" + colour;// Sphero set colour API!
+
+			}
+		}
+	}
+  
+	function sendRequest(http_request, verb, uri, async) {
+
+		//alert("Debugging on: Sending [" + uri + "] under verb [" + verb + "]");
+
+		http_request.open(verb, uri, async);
+		http_request.setRequestHeader("Accept", "application/json");
+		http_request.send();
+
+		//alert("Your message was sent successfully.");
+	}
+
+	function initiateXMLHttpObject() {
+
+		// Initiating XMLHttpRequest Object:
+		var http_request;
+
+		try {
+			// Opera 8.0+, Firefox, Chrome, Safari
+			http_request = new XMLHttpRequest();
+		} catch (e) {
+			// Internet Explorer Browsers
+			try {
+				http_request = new ActiveXObject("Msxml2.XMLHTTP");
+			} catch (e) {
+				try {
+					http_request = new ActiveXObject("Microsoft.XMLHTTP");
+				} catch (e) {
+					// Something went wrong
+					alert("Your browser broke!");
+					return false;
+				}
+			}
+		}
+
+		return http_request;
+	}
+
 </script>
